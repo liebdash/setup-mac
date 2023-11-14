@@ -1,0 +1,23 @@
+# Config for doordash-specific stuff
+source ~/.doordash_config
+
+# Config for different git operations
+source ~/.git_config
+
+
+# homebrew config
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+# command line shortcuts
+alias k=kubectl
+
+# warpify terminal
+printf '\eP$f{"hook": "SourcedRcFileForWarp", "value": { "shell": "zsh" }}\x9c'
+
+# premium jetbrains 
+export PATH="/Applications/IntelliJ IDEA.app/Contents/MacOS:$PATH"
+export PATH="/Applications/PyCharm.app/Contents/MacOS:$PATH"
+
+# community edition jetbrains (commented out for company work)
+# export PATH="/Applications/IntelliJ IDEA CE.app/Contents/MacOS:$PATH"
+# export PATH="/Applications/PyCharm CE.app/Contents/MacOS:$PATH"

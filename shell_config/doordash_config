@@ -1,0 +1,91 @@
+# stuff relevant for dd office
+source ~/.office_config
+
+# github 
+export HOMEBREW_GITHUB_API_TOKEN=<SECRET>
+HOMEBREW_GITHUB_PACKAGES_TOKEN=$HOMEBREW_GITHUB_API_TOKEN
+export GITHUB_USERNAME=liebdash
+
+# load IT-provided staging environment credentials and PIP_EXTRA_INDEX_URL
+export ARTIFACTORY_USERNAME=justin.lieb@doordash.com
+export ARTIFACTORY_PASSWORD=<SECRET>
+
+# Environment variables for android repository
+export artifactoryUser=${ARTIFACTORY_USERNAME}
+export artifactoryPassword=${ARTIFACTORY_PASSWORD}
+
+export ARTIFACTORY_URL=https://${ARTIFACTORY_USERNAME/@/%40}:${ARTIFACTORY_PASSWORD}@ddartifacts.jfrog.io/ddartifacts/api/pypi/pypi-local/simple/
+export PIP_EXTRA_INDEX_URL=${ARTIFACTORY_URL}
+
+# AWS
+export AWS_SDK_LOAD_CONFIG=1
+
+# SDKMAN
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+# JENV
+export PATH="$HOME/.jenv/bin:$PATH"
+eval "$(jenv init -)"
+
+# AWS VPN 
+function vpn() {
+    action="$1"
+    app_name="AWS VPN Client"
+
+    case "$action" in
+        "connect"|"disconnect")
+            osascript -e "tell application \"$app_name\" to activate"
+            osascript -e "tell application \"System Events\" to set visible of process \"$app_name\" to true"
+            osascript -e "tell application \"System Events\" to tell process \"$app_name\" to click button \"$action\" of window 1"
+            osascript -e "tell application \"System Events\" to set visible of process \"$app_name\" to false"
+            ;;
+        "kill")
+            ps auxwww | grep acvc-openvpn | grep -v grep | tr -s ' ' | cut -d ' ' -f 2 | xargs sudo kill -9
+            ;;
+        *)
+            echo "Usage: vpn [connect|disconnect|kill]"
+            ;;
+    esac
+}
+
+function clone() {
+
+	cd ~/Projects
+	  local org="doordash"  
+  	for repo_name in "$@"; do
+	  # Check if the argument looks like a repository name
+    if [[ "$repo_name" =~ ^[a-zA-Z0-9-]+ ]]; then
+      local repo_url="https://github.com/$org/$repo_name.git"
+      git clone "$repo_url" &
+    else
+      echo "Skipping argument: $repo_name (not a valid repository name)"
+    fi
+  done
+
+
+}
+
+staging_paymentdb() {
+	tsh kube login main-00.staging-us-west-2
+	kubectl -n payment-service exec -it $(kubectl get pods -n payment-service -l app=admin -o jsonpath='{.items[0].metadata.name}') --context teleport-production-main-00.staging-us-west-2 -- /bin/bash -c 'psql $(cat /vault/secrets/secrets.json | jq -r .payin_paymentdb_url)'
+}
+
+prod_paymentdb() {
+	tsh kube login cell-001-00.cell-001.prod-main-us-west-2
+	kubectl -n payment-service exec -it $(kubectl get pods -n payment-service -l app=admin -o jsonpath='{.items[0].metadata.name}') --context teleport-production-cell-001-00.cell-001.prod-main-us-west-2 -- /bin/bash -c 'psql $(cat /vault/secrets/secrets.json | jq -r .payin_paymentdb_url)'
+}
+
+staging_billingdb() {
+	tsh kube login main-00.staging-us-west-2
+	kubectl -n billing-service exec -it $(kubectl get pods -n billing-service -l app=web -o jsonpath='{.items[0].metadata.name}') --context teleport-production-main-00.staging-us-west-2 -- /bin/bash -c 'curl https://binaries.cockroachdb.com/cockroach-v21.2.9.linux-amd64.tgz | tar -xz && cp -i cockroach-v21.2.9.linux-amd64/cockroach /usr/local/bin/ && cockroach sql --url "postgresql://recurring_billing_service_dba_20220315@recurring-billing-service-crdb.us-west-2.aws.ddnw.net:26257/recurring_billing_service?sslmode=require&sslrootcert=/home/crdb_certs/recurring_billing_service_ca.crt&sslcert=/home/crdb_certs/recurring_billing_service_dba.crt&sslkey=/home/crdb_certs/recurring_billing_service_dba.pem"'	
+}
+
+prod_billingdb() {
+	tsh kube login cell-001-00.cell-001.prod-main-us-west-2
+	kubectl -n billing-service exec -it $(kubectl get pods -n billing-service -l app=web -o jsonpath='{.items[0].metadata.name}') --context  teleport-production-cell-001-00.cell-001.prod-main-us-west-2 -- /bin/bash -c 'curl https://binaries.cockroachdb.com/cockroach-v21.2.9.linux-amd64.tgz | tar -xz && cp -i cockroach-v21.2.9.linux-amd64/cockroach /usr/local/bin/ && cockroach sql --url "postgresql://recurring_billing_service_dba_20220325@recurring-billing-service-crdb.us-west-2.aws.ddnw.net:26257/recurring_billing_service?sslmode=require&sslrootcert=/home/crdb_certs/recurring_billing_service_ca.crt&sslcert=/home/crdb_certs/recurring_billing_service_dba.crt&sslkey=/home/crdb_certs/recurring_billing_service_dba.pem"'
+}
+
+kill_vpn() { 
+	ps auxwww | grep acvc-openvpn | grep -v grep | tr -s ' ' | cut -d ' ' -f 2 | xargs sudo kill -9
+}

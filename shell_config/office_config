@@ -1,0 +1,46 @@
+xdisplay() {
+	builtin="1" 
+	external=$(displayplacer list | grep 'Contextual screen id:' | egrep '[0-9]' -o | egrep -v $builtin | sort --unique | head -n 1 )
+
+
+	if [[ -z $(displayplacer list | grep 'Type: 27 inch external screen') ]]; then 
+		echo xdisplay: No external displays, exiting.
+		return 1
+	fi
+	displayplacer "id:$external res:3008x1692 hz:60 color_depth:8 scaling:on origin:(0,0) degree:0" "id:$builtin res:2056x1329 hz:120 color_depth:8 scaling:on origin:(-2056,363) degree:0"
+}
+
+x_setup() {
+    if ! command -v displayplacer >/dev/null 2>&1; then
+        brew tap jakehilborn/jakehilborn && brew install displayplacer
+    fi
+
+    contextual_id_list=$(displayplacer list | grep 'Contextual screen id:' | grep -E '[0-9]' -o | sort -u)
+    persistent_id_list=$(displayplacer list | grep 'Persistent screen id:' | grep -E '[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}' -o | sort -u)
+
+
+    builtin_contextual_id="1"
+    external_contextual_id=$(displayplacer list| grep "Contextual screen id:" | grep -E '[0-9]' -o | sort -u | head -n 1)
+
+	if [[ -z "$external_contextual_id" ]]; then
+		echo "No external displays detected. Please connect a display and try again." >&2
+		return 1
+	fi
+
+    first_contextual_id=$(echo $contextual_id_list | head -n 1)
+
+    if [ "$first_contextual_id" = "$builtin_contextual_id" ]; then
+        builtin_persistent_id=$(echo $persistent_id_list | head -n 1)
+    else
+        builtin_persistent_id=$(echo $persistent_id_list | tail -1 | head -n 1)
+    fi
+
+	external_persistent_id=$(echo $persistent_id_list | grep -v "$builtin_persistent_id" | head -n 1)
+
+    displayplacer_command=$(displayplacer list | tail -1 | sed "s/$builtin_persistent_id/$builtin_contextual_id/g; s/$external_persistent_id/\$external/g")
+
+	echo "Here's the command to run when you plug in:"
+	echo 
+    echo 'external=$(displayplacer list | grep "Contextual screen id:" | egrep "[0-9]" -o | egrep -v "1" | sort --unique | head -n 1)'
+	echo $displayplacer_command
+}

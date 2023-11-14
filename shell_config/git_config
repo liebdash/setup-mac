@@ -1,0 +1,39 @@
+function checkout() {
+  if [[ $# -eq 0 ]]; then
+  git checkout $(git branch | tac | fzf)
+  elif [[ $1 == "-" ]]; then
+	git checkout - 
+  elif [[ $1 == "-b" ]]; then
+    local prefix=$(date +%y-%m-%d)-
+    shift
+    git checkout -b "$prefix$1"
+  elif [[ $1 == "-d" ]]; then
+    shift
+    git branch -D $(git branch | sed -E 's/^..//' | grep -i "^$(date +%y-%m-%d)-$1$" | sort -r | head -n 1)
+  else
+    local branch_name=$(git branch | sed -E 's/^..//' | grep -i "^$(date +%y-%m-%d)-$1$" | sort -r | head -n 1)
+    if [[ -z $branch_name ]]; then
+      branch_name=$(git branch | sed -E 's/^..//' | grep -i "$1" | sort -r | head -n 1)
+      if [[ -z $branch_name ]]; then
+        echo "No branch matching '$1' found"
+        return 1
+      else
+        git checkout "$branch_name"
+      fi
+    else
+      git checkout "$branch_name"
+    fi
+  fi
+}
+
+git_clean() {
+	git branch --merged master | grep -v "^\* master" | xargs -n 1 -r git branch -d
+}
+
+rebase() {
+	git checkout master
+	git pull
+	git checkout - 
+	git rebase master
+	git push --force
+}
