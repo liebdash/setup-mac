@@ -2,11 +2,12 @@ function checkout() {
   if [[ $# -eq 0 ]]; then
   git checkout $(git branch | tac | fzf)
   elif [[ $1 == "-" ]]; then
-	git checkout - 
+	git checkout -
   elif [[ $1 == "-b" ]]; then
     local prefix=$(date +%y-%m-%d)-
     shift
-    git checkout -b "$prefix$1"
+    branch_name=$(echo "$1" | tr ' ' '-')
+    git checkout -b "$prefix$branch_name"
   elif [[ $1 == "-d" ]]; then
     shift
     git branch -D $(git branch | sed -E 's/^..//' | grep -i "^$(date +%y-%m-%d)-$1$" | sort -r | head -n 1)
@@ -36,4 +37,54 @@ rebase() {
 	git checkout - 
 	git rebase master
 	git push --force
+}
+
+# Function to find repository by initials with overrides
+repo() {
+    # Ensure an argument is provided
+    if [ -z "$1" ]; then
+        echo "Usage: repo <initials>"
+        return 1
+    fi
+
+    # Convert the input initials to lowercase
+    initials=$(echo "$1" | tr '[:upper:]' '[:lower:]')
+
+    # Configurable overrides
+    case "$initials" in
+        b)
+            cd "$HOME/Projects/billing-service" || return
+            return 0
+            ;;
+	p)
+	    cd "$HOME/Projects/payment-service" || return
+            return 0
+            ;;
+        # Add more overrides here as needed
+        # y)
+        #     cd "$HOME/Projects/your-repo-name" || return
+        #     return 0
+        #     ;;
+    esac
+
+    # Search through the ~/Projects directory
+    project_dir="$HOME/Projects"
+    match=$(find "$project_dir" -maxdepth 1 -type d -print | while read -r dir; do
+        repo_name=$(basename "$dir")
+        repo_initials=$(echo "$repo_name" | tr '-' '\n' | awk '{print substr($0,1,1)}' | tr -d '\n')
+        if [ "$repo_initials" = "$initials" ]; then
+            echo "$dir"
+            break
+        fi
+    done)
+
+    if [ -n "$match" ]; then
+        cd "$match" || return
+	echo $match
+        return 0
+    fi
+
+    # If no match is found
+    echo "No repository found with initials: $initials"
+    return 1
 }

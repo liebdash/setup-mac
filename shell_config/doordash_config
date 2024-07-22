@@ -77,13 +77,11 @@ prod_paymentdb() {
 }
 
 staging_billingdb() {
-	tsh kube login main-00.staging-us-west-2
-	kubectl -n billing-service exec -it $(kubectl get pods -n billing-service -l app=web -o jsonpath='{.items[0].metadata.name}') --context teleport-production-main-00.staging-us-west-2 -- /bin/bash -c 'curl https://binaries.cockroachdb.com/cockroach-v21.2.9.linux-amd64.tgz | tar -xz && cp -i cockroach-v21.2.9.linux-amd64/cockroach /usr/local/bin/ && cockroach sql --url "postgresql://recurring_billing_service_dba_20220315@recurring-billing-service-crdb.us-west-2.aws.ddnw.net:26257/recurring_billing_service?sslmode=require&sslrootcert=/home/crdb_certs/recurring_billing_service_ca.crt&sslcert=/home/crdb_certs/recurring_billing_service_dba.crt&sslkey=/home/crdb_certs/recurring_billing_service_dba.pem"'	
+	tsh db connect recurring-billing-service-crdb-staging --db-user justin.lieb --db-name recurring_billing_service
 }
 
 prod_billingdb() {
-	tsh kube login cell-001-00.cell-001.prod-main-us-west-2
-	kubectl -n billing-service exec -it $(kubectl get pods -n billing-service -l app=web -o jsonpath='{.items[0].metadata.name}') --context  teleport-production-cell-001-00.cell-001.prod-main-us-west-2 -- /bin/bash -c 'curl https://binaries.cockroachdb.com/cockroach-v21.2.9.linux-amd64.tgz | tar -xz && cp -i cockroach-v21.2.9.linux-amd64/cockroach /usr/local/bin/ && cockroach sql --url "postgresql://recurring_billing_service_dba_20220325@recurring-billing-service-crdb.us-west-2.aws.ddnw.net:26257/recurring_billing_service?sslmode=require&sslrootcert=/home/crdb_certs/recurring_billing_service_ca.crt&sslcert=/home/crdb_certs/recurring_billing_service_dba.crt&sslkey=/home/crdb_certs/recurring_billing_service_dba.pem"'
+	tsh db connect recurring-billing-service-crdb-prod --db-user justin.lieb --db-name recurring_billing_service
 }
 
 kill_vpn() { 

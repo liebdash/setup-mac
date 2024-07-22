@@ -1,9 +1,9 @@
 xdisplay() {
-	builtin="1" 
+	builtin="1"
 	external=$(displayplacer list | grep 'Contextual screen id:' | egrep '[0-9]' -o | egrep -v $builtin | sort --unique | head -n 1 )
 
 
-	if [[ -z $(displayplacer list | grep 'Type: 27 inch external screen') ]]; then 
+	if [[ -z $(displayplacer list | grep 'Type: 27 inch external screen') ]]; then
 		echo xdisplay: No external displays, exiting.
 		return 1
 	fi
@@ -40,7 +40,7 @@ x_setup() {
     displayplacer_command=$(displayplacer list | tail -1 | sed "s/$builtin_persistent_id/$builtin_contextual_id/g; s/$external_persistent_id/\$external/g")
 
 	echo "Here's the command to run when you plug in:"
-	echo 
+	echo
     echo 'external=$(displayplacer list | grep "Contextual screen id:" | egrep "[0-9]" -o | egrep -v "1" | sort --unique | head -n 1)'
 	echo $displayplacer_command
 }
