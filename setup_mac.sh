@@ -53,10 +53,12 @@ brew install --cask arc
 # - override cmd + space
 # - turn off side bar
 # - start at login
+brew install --cask bartender
 brew install --cask chatgpt
 brew install --cask cold-turkey-blocker
 brew install --cask contexts
 brew install --cask docker
+brew install --cask macs-fan-control
 brew install --cask obsidian
 brew install --cask raycast
 brew install --cask scroll-reverser 
@@ -89,6 +91,8 @@ if [ "$1" == "--doordash" ]; then
     brew install --cask intellij-idea
     brew install --cask pycharm
 
+    touch ~/.doordash_secrets
+
     # apps need write access to own contents
     sudo xattr -dr com.apple.quarantine /Applications/IntelliJ\ IDEA.app/ && sudo chmod -R 777 /Applications/IntelliJ\ IDEA.app/
     sudo xattr -dr com.apple.quarantine /Applications/PyCharm.app/ && sudo chmod -R 777 /Applications/PyCharm.app/ 
@@ -102,14 +106,21 @@ else
 fi
 
 
+# Fonts
+brew install --cask font-fira-code
 
 
 
 
 
+# Setup terminal
 # ./vimrc -> ~/.vimrc
-
-
+ln -s ~/Projects/setup-mac/shell_config/doordash_config ~/.doordash_config
+ln -s ~/Projects/setup-mac/shell_config/git_config ~/.git_config
+ln -s ~/Projects/setup-mac/shell_config/office_config ~/.office_config
+ln -s ~/Projects/setup-mac/shell_config/vimrc ~/.vimrc
+ln -s ~/Projects/setup-mac/shell_config/zshrc ~/.zshrc
+ln -s ~/Projects/setup-mac/shell_config/bash_profile ~/.bash_profile
 
 
 
@@ -124,6 +135,15 @@ defaults write com.apple.dock autohide-time-modifier -float 0.15 # speed up anim
 defaults write com.apple.dock largesize -int 128 # magnify size
 defaults write com.apple.dock tilesize -integer 40 # default size
 # defaults write com.apple.dock persistent-apps -array-add '{"tile-type"="small-spacer-tile";}' # add spacer
-
-# Insert all changes to dock above this line
+defaults delete com.apple.dock persistent-apps
 killall Dock
+
+# Things that cannot be automated
+# Install apps from app store (rcmd, magnet, amphetamine)
+
+# Keyboard Shortcuts 
+# 1. Remove spotlight command + space
+# 2. Map caps lock to escape
+# 3. Map left and right screen to option D, L
+
+
