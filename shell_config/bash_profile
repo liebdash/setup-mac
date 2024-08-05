@@ -21,3 +21,7 @@ export PATH="/Applications/PyCharm.app/Contents/MacOS:$PATH"
 # community edition jetbrains (commented out for company work)
 # export PATH="/Applications/IntelliJ IDEA CE.app/Contents/MacOS:$PATH"
 # export PATH="/Applications/PyCharm CE.app/Contents/MacOS:$PATH"
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="/Users/justin.lieb/.sdkman"
+[[ -s "/Users/justin.lieb/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/justin.lieb/.sdkman/bin/sdkman-init.sh"
