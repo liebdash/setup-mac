@@ -5,3 +5,5 @@ eval "$(jenv init -)"
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="/Users/justin.lieb/.sdkman"
 [[ -s "/Users/justin.lieb/.sdkman/bin/sdkman-init.sh" ]] && source "/Users/justin.lieb/.sdkman/bin/sdkman-init.sh"
+export PATH="$HOME/.jenv/bin:$PATH"
+eval "$(jenv init -)"
